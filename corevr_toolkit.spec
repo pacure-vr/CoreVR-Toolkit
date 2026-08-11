@@ -4,7 +4,7 @@ import os
 import glob
 from PyInstaller.utils.hooks import Tree
 
-proj = os.path.abspath(os.path.dirname(__file__))
+proj = os.path.abspath(SPECPATH)
 script = os.path.join(proj, 'src', 'ui', 'main.py')
 
 # Collect compiled native python extension if present in src/ui
