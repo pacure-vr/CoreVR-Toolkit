@@ -1,19 +1,20 @@
 @echo off
 setlocal enabledelayedexpansion
 
-echo === CoreVR Toolkit Windows build script ===
+echo === CoreVR Toolkit Windows build script (w64devkit / MinGW) ===
 
 if not exist build mkdir build
 pushd build
-echo Running CMake (x64)...
-cmake -A x64 ..
+echo Running CMake with MinGW Makefiles...
+cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release ..
 if errorlevel 1 (
     echo CMake configuration failed.
     popd
     exit /b 1
 )
+
 echo Building Release...
-cmake --build . --config Release
+cmake --build .
 if errorlevel 1 (
     echo Build failed.
     popd
@@ -24,17 +25,18 @@ popd
 REM copy compiled pybind module into src/ui
 echo Copying corevr_bridge module into src/ui
 set SRC_UI=src\ui
-if exist build\Release\corevr_bridge*.pyd (
+if not exist "%SRC_UI%" mkdir "%SRC_UI%"
+
+if exist build\corevr_bridge*.pyd (
+    for %%f in (build\corevr_bridge*.pyd) do (
+        copy /Y "%%f" "%SRC_UI%\"
+    )
+) else if exist build\Release\corevr_bridge*.pyd (
     for %%f in (build\Release\corevr_bridge*.pyd) do (
         copy /Y "%%f" "%SRC_UI%\"
     )
 ) else (
-    REM try build\corevr_bridge*.pyd
-    if exist build\corevr_bridge*.pyd (
-        for %%f in (build\corevr_bridge*.pyd) do (
-            copy /Y "%%f" "%SRC_UI%\"
-        )
-    )
+    echo WARNING: corevr_bridge*.pyd not found in build folder.
 )
 
 echo Copying assets into src/ui\assets
@@ -63,6 +65,6 @@ if exist dist\corevr_toolkit\corevr_toolkit.exe (
     echo WARNING: executable not found in dist\
 )
 
-echo Build finished. Output in dist_release\Windows\
+echo Build finished successfully! Output in dist_release\Windows\
 endlocal
 exit /b 0
