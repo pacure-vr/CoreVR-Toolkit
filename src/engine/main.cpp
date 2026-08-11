@@ -15,6 +15,8 @@
 #endif
 #ifdef _WIN32
 #include <vector>
+#endif
+#if defined(_WIN32) && !defined(__MINGW32__)
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Graphics.Capture.h>
 #include <winrt/Windows.Graphics.DirectX.Direct3D11.h>
@@ -677,6 +679,7 @@ bool OverlayManager::start_wgc_capture_by_title(const std::string &title, std::s
     }
     target_hwnd_ = reinterpret_cast<void*>(hwnd);
 
+#if defined(_WIN32) && !defined(__MINGW32__)
     // Try initialize WinRT / WGC
     try {
         winrt::init_apartment();
@@ -687,6 +690,10 @@ bool OverlayManager::start_wgc_capture_by_title(const std::string &title, std::s
         // fallback to GDI
         wgc_enabled_ = false;
     }
+#else
+    // MinGW does not support WinRT headers; use GDI capture fallback only.
+    wgc_enabled_ = false;
+#endif
 
     return true;
 }

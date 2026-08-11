@@ -5,29 +5,21 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+include(GNUInstallDirs)
+
 find_package(pybind11 REQUIRED)
 
-include(FetchContent)
+# Use a fixed local OpenVR checkout to avoid repeated downloads and preserve cache.
+set(OPENVR_BASE_DIR ${PROJECT_SOURCE_DIR}/data/openvr)
+find_path(OPENVR_INCLUDE_DIR openvr.h PATHS ${OPENVR_BASE_DIR}/headers /usr/include /usr/local/include)
+find_library(OPENVR_LIBRARY NAMES openvr_api openvr PATHS ${OPENVR_BASE_DIR}/lib/win64 ${OPENVR_BASE_DIR}/lib/win32 /usr/lib /usr/local/lib)
 
-# Try to find OpenVR headers and library locally
-find_path(OPENVR_INCLUDE_DIR openvr.h PATHS /usr/include /usr/local/include)
-find_library(OPENVR_LIBRARY NAMES openvr_api openvr PATHS /usr/lib /usr/local/lib)
+if(NOT OPENVR_INCLUDE_DIR)
+  message(FATAL_ERROR "OpenVR headers not found. Please clone OpenVR into ${OPENVR_BASE_DIR}.")
+endif()
 
-if(NOT OPENVR_INCLUDE_DIR OR NOT OPENVR_LIBRARY)
-  message(STATUS "OpenVR not found locally; Fetching OpenVR via FetchContent...")
-  FetchContent_Declare(
-    openvr
-    GIT_REPOSITORY https://github.com/ValveSoftware/openvr.git
-    GIT_TAG master
-  )
-  FetchContent_MakeAvailable(openvr)
-  if(NOT OPENVR_INCLUDE_DIR)
-    set(OPENVR_INCLUDE_DIR ${openvr_SOURCE_DIR}/headers)
-  endif()
-  if(NOT OPENVR_LIBRARY)
-    # The fetched project provides a target `openvr_api` when built; attempt to link to it by name
-    set(OPENVR_LIBRARY openvr_api)
-  endif()
+if(NOT OPENVR_LIBRARY)
+  message(WARNING "OpenVR library not found in ${OPENVR_BASE_DIR}/lib or system paths. Build may fail until the correct library is available.")
 endif()
 
 include_directories(${PROJECT_SOURCE_DIR}/include ${OPENVR_INCLUDE_DIR})
@@ -49,4 +41,5 @@ target_include_directories(corevr_bridge PRIVATE ${PROJECT_SOURCE_DIR}/include $
 install(TARGETS corevr_bridge corevr_engine
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
