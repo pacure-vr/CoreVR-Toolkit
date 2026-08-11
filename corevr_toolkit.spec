@@ -13,8 +13,9 @@ for f in glob.glob(os.path.join(proj, 'src', 'ui', 'corevr_bridge.*')):
     # add (src, dest) tuple
     binaries.append((f, '.'))
 
-# Include folders config/ and extensions/ into the bundle
-datas = [ Tree(os.path.join(proj, 'config'), 'config'), Tree(os.path.join(proj, 'extensions'), 'extensions'), Tree(os.path.join(proj, 'assets'), 'assets') ]
+# Include folders config/, extensions/ and assets/ into the bundle
+# `Tree` objects are appended after Analysis creation to avoid unpacking issues.
+datas = []
 
 a = Analysis([script],
              pathex=[proj],
@@ -26,6 +27,10 @@ a = Analysis([script],
              win_no_prefer_redirects=False,
              win_private_assemblies=False,
              noarchive=False)
+
+a.datas += Tree(os.path.join(proj, 'config'), 'config')
+a.datas += Tree(os.path.join(proj, 'extensions'), 'extensions')
+a.datas += Tree(os.path.join(proj, 'assets'), 'assets')
 
 pyz = PYZ(a.pure, a.zipped_data)
 

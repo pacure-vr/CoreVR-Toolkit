@@ -69,8 +69,8 @@ if exist assets (
     echo Warning: assets folder not found to copy.
 )
 
-echo Running PyInstaller...
-python -m PyInstaller corevr_toolkit.spec --clean
+echo Running PyInstaller through build_toolkit.py...
+python build_toolkit.py
 if errorlevel 1 (
     echo PyInstaller failed.
     exit /b 1
