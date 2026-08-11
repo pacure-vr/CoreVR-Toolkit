@@ -1,8 +1,10 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
 #include <atomic>
 #include <chrono>
+#include <openvr.h>
 
 namespace corevr {
 
