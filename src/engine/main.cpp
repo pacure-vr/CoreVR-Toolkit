@@ -325,20 +325,25 @@ bool OverlayManager::render_test_texture(std::string &out_error) {
 #endif
 
 #ifdef _WIN32
+struct OverlayManagerEnumData { const std::string* target; HWND found; };
+static BOOL CALLBACK OverlayManager_EnumWindowsCallback(HWND h, LPARAM lParam) {
+    OverlayManagerEnumData* data = reinterpret_cast<OverlayManagerEnumData*>(lParam);
+    char buf[512];
+    GetWindowTextA(h, buf, sizeof(buf));
+    if (strstr(buf, data->target->c_str())) {
+        data->found = h;
+        return FALSE;
+    }
+    return TRUE;
+}
+
 bool OverlayManager::set_target_window_by_title(const std::string &title, std::string &out_error) {
     HWND hwnd = FindWindowA(nullptr, title.c_str());
     if (!hwnd) {
-        // Try enumerate windows to find substring
-        HWND found = nullptr;
-        EnumWindows([](HWND h, LPARAM lParam)->BOOL {
-            char buf[512];
-            GetWindowTextA(h, buf, sizeof(buf));
-            std::string* target = reinterpret_cast<std::string*>(lParam);
-            if (strstr(buf, target->c_str())) { *((HWND*)&found) = h; return FALSE; }
-            return TRUE;
-        }, (LPARAM)&title);
-        if (!found) { out_error = "Window not found by title"; return false; }
-        hwnd = found;
+        OverlayManagerEnumData ed{&title, nullptr};
+        EnumWindows(OverlayManager_EnumWindowsCallback, (LPARAM)&ed);
+        if (!ed.found) { out_error = "Window not found by title"; return false; }
+        hwnd = ed.found;
     }
     target_hwnd_ = reinterpret_cast<void*>(hwnd);
     return true;
@@ -392,6 +397,8 @@ bool OverlayManager::process_controller_uv(float u, float v, int mouse_event, st
 }
 #endif
 
+static vr::HmdMatrix34_t multiply34(const vr::HmdMatrix34_t &a, const vr::HmdMatrix34_t &b);
+
 #ifdef _WIN32
 bool OverlayManager::poll_controller_intersection(vr::ETrackedControllerRole controller_role, int &out_x, int &out_y, bool &out_is_trigger_down, std::string &out_error) {
     if (!created_) { out_error = "Overlay not created"; return false; }
@@ -415,13 +422,17 @@ bool OverlayManager::poll_controller_intersection(vr::ETrackedControllerRole con
     direction.v[1] = pose.mDeviceToAbsoluteTracking.m[1][2];
     direction.v[2] = pose.mDeviceToAbsoluteTracking.m[2][2];
 
-    vr::VROverlayIntersectionResults_t results;
-    vr::EVROverlayError err = vr::VROverlay()->ComputeOverlayIntersection(overlay_handle_, nullptr, &source, &direction, &results);
-    if (err != vr::VROverlayError_None) { out_error = "ComputeOverlayIntersection failed"; return false; }
-    if (!results.m_bHit) { return false; }
+    vr::VROverlayIntersectionParams_t params;
+    params.eOrigin = vr::TrackingUniverseStanding;
+    params.vSource = source;
+    params.vDirection = direction;
 
-    float u = results.m_flUV.x; // UV coords
-    float v = results.m_flUV.y;
+    vr::VROverlayIntersectionResults_t results;
+    bool hit = vr::VROverlay()->ComputeOverlayIntersection(overlay_handle_, &params, &results);
+    if (!hit) { return false; }
+
+    float u = results.vUVs.v[0];
+    float v = results.vUVs.v[1];
     out_x = int(u * tex_width_);
     out_y = int(v * tex_height_);
 
