@@ -1,6 +1,10 @@
 import os
 import sys
 
+from src.ui.path_utils import add_dll_search_path, get_resource_path
+
+add_dll_search_path()
+
 try:
     from lxml import etree as ET
 except Exception:
@@ -39,19 +43,17 @@ def read_layout(path):
 def main():
     # Initialize extension manager early
     from src.ui.extension_manager import ExtensionManager
-    ext_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'extensions')
-    ext_mgr = ExtensionManager(extensions_dir=os.path.normpath(ext_dir))
+    ext_dir = get_resource_path('extensions')
+    ext_mgr = ExtensionManager(extensions_dir=ext_dir)
     ext_mgr.load_extensions()
 
-    cfg = os.path.join(os.path.dirname(__file__), '..', '..', 'config', 'default_layout.xml')
-    cfg = os.path.normpath(cfg)
+    cfg = get_resource_path('config', 'default_layout.xml')
     if not os.path.exists(cfg):
         print('Config not found:', cfg)
         return
     panels = read_layout(cfg)
     # Also load wrist menu if present
-    wrist_cfg = os.path.join(os.path.dirname(__file__), '..', '..', 'config', 'wrist_menu.xml')
-    wrist_cfg = os.path.normpath(wrist_cfg)
+    wrist_cfg = get_resource_path('config', 'wrist_menu.xml')
     if os.path.exists(wrist_cfg):
         wrist_panels = read_layout(wrist_cfg)
         # ensure attach_to property is preserved from xml
@@ -137,7 +139,7 @@ def main():
         import time
         # load settings.json
         import json
-        settings_path = os.path.normpath(os.path.join(os.path.dirname(__file__), '..', '..', 'config', 'settings.json'))
+        settings_path = get_resource_path('config', 'settings.json')
         settings = {'taskbar_enabled': True, 'laser_enabled': True, 'lock_panels': False}
         try:
             if os.path.exists(settings_path):
@@ -164,7 +166,7 @@ def main():
             # try to set window icon for any future pygame windows
             try:
                 if set_pygame_window_icon_from_svg:
-                    set_pygame_window_icon_from_svg('assets/icons/app_icon.svg', pygame)
+                    set_pygame_window_icon_from_svg(get_resource_path('assets', 'icons', 'app_icon.svg'), pygame)
             except Exception:
                 pass
         except Exception:
@@ -192,8 +194,7 @@ def main():
                 pass
         try:
             # Optional: start virtual keyboard if keyboard layout exists
-            kb_cfg = os.path.join(os.path.dirname(__file__), '..', '..', 'config', 'keyboard_layout.xml')
-            kb_cfg = os.path.normpath(kb_cfg)
+            kb_cfg = get_resource_path('config', 'keyboard_layout.xml')
             kb_instance = None
             if os.path.exists(kb_cfg):
                 try:
@@ -337,8 +338,7 @@ def main():
                                                 settings_overlay = None
                                     elif action == 'toggle_keyboard':
                                         # toggle keyboard by starting/stopping module
-                                        kb_cfg = os.path.join(os.path.dirname(__file__), '..', '..', 'config', 'keyboard_layout.xml')
-                                        kb_cfg = os.path.normpath(kb_cfg)
+                                        kb_cfg = get_resource_path('config', 'keyboard_layout.xml')
                                         if os.path.exists(kb_cfg):
                                             try:
                                                 from src.ui.keyboard import start_keyboard_in_thread

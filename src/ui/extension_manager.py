@@ -2,14 +2,15 @@ import os
 import sys
 import importlib.util
 import traceback
+from src.ui.path_utils import get_resource_path
 
 class ExtensionManager:
     def __init__(self, extensions_dir=None):
-        self.extensions_dir = extensions_dir or os.path.join(os.getcwd(), 'extensions')
+        self.extensions_dir = extensions_dir or get_resource_path('extensions')
         self.panels = []
         self.plugins = []
         self.enabled = {}  # name -> bool
-        self.settings_path = os.path.join(os.path.dirname(__file__), '..', '..', 'config', 'settings.json')
+        self.settings_path = get_resource_path('config', 'settings.json')
         self.dirty = False
         self._load_settings()
 

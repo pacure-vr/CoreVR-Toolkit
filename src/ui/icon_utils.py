@@ -21,11 +21,15 @@ def load_svg_to_pygame_surface(svg_path, pygame):
     except Exception:
         return None
 
+from src.ui.path_utils import get_resource_path
+
 def set_pygame_window_icon_from_svg(svg_relative_path, pygame):
     """Set the pygame window icon if possible. svg_relative_path is workspace-relative path."""
     try:
-        base = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-        svg_path = os.path.normpath(os.path.join(base, svg_relative_path))
+        if os.path.isabs(svg_relative_path):
+            svg_path = svg_relative_path
+        else:
+            svg_path = get_resource_path(*svg_relative_path.replace('/', os.sep).split(os.sep))
         if not os.path.exists(svg_path):
             return False
         surf = load_svg_to_pygame_surface(svg_path, pygame)

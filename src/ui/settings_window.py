@@ -1,9 +1,13 @@
+import os
 import pygame
 import threading
 import time
 import psutil
 import json
-import os
+from src.ui.path_utils import add_dll_search_path, get_resource_path
+
+add_dll_search_path()
+
 try:
     import corevr_bridge
 except Exception:
@@ -31,7 +35,7 @@ class SettingsWindow:
         self.active_tab = 0
         self.tabs = ['Extensions', 'Glass/Panel', 'System']
         # load settings
-        self.settings_path = os.path.normpath(os.path.join(os.path.dirname(__file__), '..', '..', 'config', 'settings.json'))
+        self.settings_path = get_resource_path('config', 'settings.json')
         self.settings = {'taskbar_enabled': True, 'laser_enabled': True, 'lock_panels': False, 'zen_shortcut_enabled': True, 'zen_mode': False}
         try:
             if os.path.exists(self.settings_path):
