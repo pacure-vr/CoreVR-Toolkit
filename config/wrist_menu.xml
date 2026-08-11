@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+  <panel id="wrist_menu" name="WristMenu" attach_to="wrist_left" x="0.0" y="0.0" z="0.0" window_title="" alpha="0.80" curvature="0.25" glass_mode="true">
+    <button id="settings" name="Configuración" action="open_settings" />
+    <button id="keyboard" name="Teclado" action="toggle_keyboard" />
+    <button id="music" name="LectorMusica" action="media_playpause" />
+    <button id="stats" name="Stats" action="show_stats" />
+  </panel>
+</layout>

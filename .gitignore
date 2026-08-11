@@ -1,0 +1,26 @@
+# Build and IDE
+/build/
+CMakeFiles/
+CMakeCache.txt
+/cmake-build-*/
+/dist/
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Compiled objects
+*.o
+*.obj
+*.so
+*.pyd
+*.dll
+
+# VS Code
+.vscode/
+
+# Misc
+*.log

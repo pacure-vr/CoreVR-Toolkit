@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+  <panel id="main" name="MainPanel" x="0.0" y="1.5" z="-2.0" opacity="0.95" scale="1.0" window_title="" alpha="0.95" curvature="0.0" glass_mode="false" />
+</layout>
